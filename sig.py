@@ -1,3 +1,4 @@
+from curses import window
 from tkinter import *
 import tkinter as tk
 import tkinter.messagebox as mbox
@@ -5,6 +6,7 @@ from PIL import Image, ImageTk
 from fpdf import FPDF
 from pymongo import MongoClient
 from customtkinter import *
+
 
 # MongoDB connection
 client = MongoClient("mongodb://localhost:27017/")
@@ -27,6 +29,8 @@ def launch_emi_calculator():
     firstclick6 = True
     cal_emi = 0
 
+    def def_emi():
+        mbox.showinfo("EMI INFO", "EMI, which stands for Equated Monthly Installment, is the monthly amount payments we make towards a loan we opted for.\n\nEMI payments include contributions towards both principal and interest on the loan amount.\n\nThe mathematical formula to calculate EMI is: EMI = P × r × (1 + r)n/((1 + r)n - 1) where P= Loan amount, r= interest rate, n=tenure in number of months.")
     # Defined function for start button
     def def_start():
         def on_e1_click(event):
@@ -125,10 +129,6 @@ def launch_emi_calculator():
         f1.propagate(0)
         f1.pack(side='top')
 
-        # Top label
-        start1 = tk.Label(f1, text="EMI  CALCULATOR", font=("Poppins", 50, "bold"), fg="black")
-        start1.place(x=180, y=10)
-
         # Created entry for Name
         l1 = Label(f1, text='Name', font=("Poppins", 25), fg="brown")
         l1.place(x=100, y=140)
@@ -193,13 +193,36 @@ def launch_emi_calculator():
         exitb = Button(window, text="EXIT", command=window.quit, font=("Poppins", 20), bg="red", fg="blue", borderwidth=3, relief="raised")
         exitb.place(x=830, y=680)
 
+
+    # top label
+    start1 = tk.Label(text = "EMI  CALCULATOR", font=("Poppins", 50), fg="Black") # same way bg
+    start1.place(x = 180, y = 10)
+
+# image on the main window
+    path = "./emi_front.jpg"
+# Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
+    img1 = ImageTk.PhotoImage(Image.open(path))
+    # The Label widget is a standard Tkinter widget used to display a text or image on the screen.
+    panel = tk.Label(window, image = img1)
+    panel.place(x = 100, y = 140)
+
     # Created start button
-    btn = Button(window, text="START", command=def_start, font=("Poppins", 20, "bold"), bg="yellow", fg="red", borderwidth=10, relief="raised", activeforeground="green", activebackground="light green", padx=50)
-    btn.place(x=380, y=290)
+    btn = Button(window, text="START", command=def_start, font=("Poppins", 20, "bold"), bg="yellow", fg="red",
+             borderwidth=10, relief="raised", activeforeground="green", activebackground="light green", padx=50)
+    btn.place(x=730, y=190)
 
     # Created EMI Info button
-    btn2 = Button(window, text="EMI INFO", command=def_emi, font=("Poppins", 15), bg="light blue", fg="black", borderwidth=3, relief="raised", activeforeground="blue", activebackground="light green", padx=20)
-    btn2.place(x=400, y=430)
+    btn2 = Button(window, text="EMI INFO", command=def_emi, font=("Poppins", 20 , "bold"), bg="light blue", fg="black",
+              borderwidth=3, relief="raised", activeforeground="blue", activebackground="light green", padx=20)
+    btn2.place(x=730, y=300)
+
+    def exit_win():
+        if mbox.askokcancel("Exit", "Do you want to exit?"):
+            window.destroy()
+
+    exitb = Button(window, text="EXIT", command=exit_win, font=("Arial", 30), bg="red", fg="blue",
+               borderwidth=3, relief="raised")
+    exitb.place(x=730, y=410) 
 
     window.mainloop()
 
@@ -211,7 +234,7 @@ def login():
     main.config(bg="white")
 
     # Background Image
-    bg_img = CTkImage(Image.open("D:\disk d\Shivam\Modern-Login-Page-CustomTkinter-Python-main\Modern-Login-Page-CustomTkinter-Python-main\sign.jpg"), size=(500, 500))
+    bg_img = CTkImage(Image.open("./sign.jpg"), size=(500, 500))
     bg_lab = CTkLabel(main, image=bg_img, text="")
     bg_lab.grid(row=0, column=0)
 
@@ -237,12 +260,31 @@ def login():
     cr_acc = CTkLabel(frame1, text="Create Account!", text_color="black", cursor="hand2", font=("", 15))
     cr_acc.grid(row=3, column=0, sticky="w", pady=20, padx=40)
 
+    # Function to save user data to MongoDB
+    def save_login_details():
+        username = usrname_entry.get()
+        password = passwd_entry.get()
+
+        # You can add additional checks for username/password validity here
+        if username and password:
+            user_data = {
+                "username": username,
+                "password": password  # Note: In a real application, store hashed passwords!
+            }
+            # Store the data in the 'user' collection
+            user_collection = db['user']  # New collection for user logins
+            user_collection.insert_one(user_data)
+            print("User login data stored successfully!")
+        else:
+            mbox.showwarning("Input Error", "Please enter both username and password.")
+
     # Login Button
     l_btn = CTkButton(frame1, text="Login", font=("", 15, "bold"), height=40, width=60, fg_color="#0085FF", cursor="hand2",
-                      corner_radius=15, command=lambda: [main.destroy(), launch_emi_calculator()])
+                      corner_radius=15, command=lambda: [save_login_details(), main.quit(), main.destroy(), launch_emi_calculator()])
     l_btn.grid(row=3, column=0, sticky="ne", pady=20, padx=35)
 
     main.mainloop()
+
 
 
 # Start the login function
